@@ -56,7 +56,7 @@ def show_custom(request):
                         else:
                             try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
                             except: final_arr[code] += ''
-            print(final_arr)
+            # print(final_arr)
             context={'status':200,'data':final_arr}
 
     return JsonResponse(context)
@@ -85,7 +85,7 @@ def block_ip(request):
 @csrf_exempt
 def blocked_ips(request):
     blocked_ip = subprocess.check_output("iptables -L INPUT -v -n", shell=True, universal_newlines=True)
-    print(blocked_ip)
+    # print(blocked_ip)
     context={'status':200,'data':blocked_ip}
     return JsonResponse(context)
 
@@ -95,7 +95,7 @@ def unblock_ips(request):
         formData = request.body
         form = ast.literal_eval(formData.decode('utf-8'))
         ip = form['ip']
-        print(ip)
+        # print(ip)
         os.system(f'iptables -D INPUT -s {ip} -j DROP')
         os.system('service iptables save')
         context = {'status':200,'msg':'successfully unblocked'}
