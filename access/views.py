@@ -12,10 +12,11 @@ from datetime import datetime,timedelta
 
 # Create your views here.
 
-def index(request):
-    # a = os.popen('cat /var/log/apache2/access.log').read()
+def index(request,server):
+    # a = os.popen('cat /var/log/{server}/access.log').read()
     # print(a,type(a))
-    returned_text = subprocess.check_output("cat /var/log/apache2/access.log", shell=True, universal_newlines=True)
+    # print(server)
+    returned_text = subprocess.check_output(f"cat /var/log/{server}/access.log", shell=True, universal_newlines=True)
     # print("dir command to list file and directory")
     # print(returned_text)
     context={'status':200,'data':returned_text}
@@ -26,7 +27,7 @@ def index(request):
     return JsonResponse(context)
 
 @csrf_exempt
-def show_custom(request):
+def show_custom(request,server):
     if request.method == "POST":
         formData = request.body
         form = ast.literal_eval(formData.decode('utf-8'))
@@ -40,7 +41,7 @@ def show_custom(request):
             # for i in range(fil,-1,-1):
             #     if i != 1:
             #         for code in codes:
-            #             cmd = f'grep -E "$(date "+%d\/%b\/%Y:%H" -d' + f"'{i} hours ago').*" + f'HTTP.*{code} " /var/log/apache2/access.log'
+            #             cmd = f'grep -E "$(date "+%d\/%b\/%Y:%H" -d' + f"'{i} hours ago').*" + f'HTTP.*{code} " /var/log/{server}/access.log'
             #             if code not in final_arr:
             #                 try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
             #                 except:final_arr[code] = ''
@@ -49,7 +50,7 @@ def show_custom(request):
             #                 except: final_arr[code] += ''
             #     else:
             #         for code in codes:
-            #             cmd = f'grep -E "$(date "+%d\/%b\/%Y:%H" -d' + f"'{i} hour ago').*" + f'HTTP.*{code} " /var/log/apache2/access.log'
+            #             cmd = f'grep -E "$(date "+%d\/%b\/%Y:%H" -d' + f"'{i} hour ago').*" + f'HTTP.*{code} " /var/log/{server}/access.log'
             #             if code not in final_arr:
             #                 try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
             #                 except:final_arr[code] = ''
@@ -66,21 +67,21 @@ def show_custom(request):
             for code in codes:
                 if past >0:
                     if hr<10 and past<10:
-                        cmd = f'egrep "13/Feb/2023:(0[{past}-{hr}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                        cmd = f'egrep "13/Feb/2023:(0[{past}-{hr}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif hr >=10 and past>=10 and hr<20 and past<20:
-                        cmd = f'egrep "13/Feb/2023:(1[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                        cmd = f'egrep "13/Feb/2023:(1[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif hr>=20 and past>=20:
-                        cmd = f'egrep "13/Feb/2023:(2[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                        cmd = f'egrep "13/Feb/2023:(2[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif past<10 and hr >=10 and hr<20:
-                        cmd = f'egrep "13/Feb/2023:(0[{past}-9]|1[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                        cmd = f'egrep "13/Feb/2023:(0[{past}-9]|1[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif past<10 and hr >=20:
-                        cmd = f'egrep "13/Feb/2023:(0[{past}-9]|1[0-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                        cmd = f'egrep "13/Feb/2023:(0[{past}-9]|1[0-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif past>=10 and hr>=20 and past<20:
-                        cmd = f'egrep "13/Feb/2023:(1[{past}-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                        cmd = f'egrep "13/Feb/2023:(1[{past}-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     else:
-                        cmd = f'egrep "13/Feb/2023:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/apache2/access.log'
+                        cmd = f'egrep "13/Feb/2023:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
                 else:
-                    cmd = f'egrep "13/Feb/2023:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/apache2/access.log'
+                    cmd = f'egrep "13/Feb/2023:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
                 # print(cmd)
                 if code not in final_arr:
                     try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
@@ -93,16 +94,16 @@ def show_custom(request):
     return JsonResponse(context)
 
 @csrf_exempt
-def show_ipwise(request):
-    cmd = "awk '{ print $1 } ' /var/log/apache2/access.log | sort | uniq -c"
+def show_ipwise(request,server):
+    cmd = "awk '{ print $1 } '" +  f" /var/log/{server}/access.log | sort | uniq -c"
     total_ip = subprocess.check_output(cmd, shell=True, universal_newlines=True)
-    cmd = "awk '{ print $1,$9 } ' /var/log/apache2/access.log | sort | uniq -c"
+    cmd = "awk '{ print $1,$9 } '"+ f" /var/log/{server}/access.log | sort | uniq -c"
     r = subprocess.check_output(cmd, shell=True, universal_newlines=True)
     context={'status':200,'data':[total_ip,r]}
     return JsonResponse(context)
 
 @csrf_exempt
-def block_ip(request):
+def block_ip(request,server):
     if request.method == "POST":
         formData = request.body
         form = ast.literal_eval(formData.decode('utf-8'))
@@ -114,14 +115,14 @@ def block_ip(request):
         return JsonResponse(context)
 
 @csrf_exempt
-def blocked_ips(request):
+def blocked_ips(request,server):
     blocked_ip = subprocess.check_output("iptables -L INPUT -v -n", shell=True, universal_newlines=True)
     # print(blocked_ip)
     context={'status':200,'data':blocked_ip}
     return JsonResponse(context)
 
 @csrf_exempt
-def unblock_ips(request):
+def unblock_ips(request,server):
     if request.method == "POST":
         formData = request.body
         form = ast.literal_eval(formData.decode('utf-8'))
@@ -133,7 +134,7 @@ def unblock_ips(request):
         return JsonResponse(context)
 
 @csrf_exempt
-def firewall(request):
+def firewall(request,server):
     blocked_ip = subprocess.check_output("iptables -L INPUT -v -n | grep DROP | awk '{ print $8 }'", shell=True, universal_newlines=True)
     context = {'status':200,'data':blocked_ip}
     return JsonResponse(context)
