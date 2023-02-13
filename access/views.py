@@ -32,31 +32,62 @@ def show_custom(request):
         form = ast.literal_eval(formData.decode('utf-8'))
         # print(form)
         fil = form['filter']
-        print(fil)
+        # print(fil)
         if fil != '':
             final_arr = {}
             codes = [200,404,500]
             fil = int(fil)
-            for i in range(fil,-1,-1):
-                if i != 1:
-                    for code in codes:
-                        cmd = f'grep -E "$(date "+%d\/%b\/%Y:%H" -d' + f"'{i} hours ago').*" + f'HTTP.*{code} " /var/log/apache2/access.log'
-                        if code not in final_arr:
-                            try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
-                            except:final_arr[code] = ''
-                        else:
-                            try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
-                            except: final_arr[code] += ''
+            # for i in range(fil,-1,-1):
+            #     if i != 1:
+            #         for code in codes:
+            #             cmd = f'grep -E "$(date "+%d\/%b\/%Y:%H" -d' + f"'{i} hours ago').*" + f'HTTP.*{code} " /var/log/apache2/access.log'
+            #             if code not in final_arr:
+            #                 try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            #                 except:final_arr[code] = ''
+            #             else:
+            #                 try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            #                 except: final_arr[code] += ''
+            #     else:
+            #         for code in codes:
+            #             cmd = f'grep -E "$(date "+%d\/%b\/%Y:%H" -d' + f"'{i} hour ago').*" + f'HTTP.*{code} " /var/log/apache2/access.log'
+            #             if code not in final_arr:
+            #                 try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            #                 except:final_arr[code] = ''
+            #             else:
+            #                 try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            #                 except: final_arr[code] += ''
+            # #print(final_arr)
+            dt = datetime.now()
+            hr = dt.hour
+            past=hr - fil
+            # past = str(past)
+            # if len(past) !=2:past1 = '0'+past
+            # else:past1 =past
+            for code in codes:
+                if past >0:
+                    if hr<10 and past<10:
+                        cmd = f'egrep "13/Feb/2023:(0[{past}-{hr}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                    elif hr >=10 and past>=10 and hr<20 and past<20:
+                        cmd = f'egrep "13/Feb/2023:(1[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                    elif hr>=20 and past>=20:
+                        cmd = f'egrep "13/Feb/2023:(2[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                    elif past<10 and hr >=10 and hr<20:
+                        cmd = f'egrep "13/Feb/2023:(0[{past}-9]|1[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                    elif past<10 and hr >=20:
+                        cmd = f'egrep "13/Feb/2023:(0[{past}-9]|1[0-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                    elif past>=10 and hr>=20 and past<20:
+                        cmd = f'egrep "13/Feb/2023:(1[{past}-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/apache2/access.log'
+                    else:
+                        cmd = f'egrep "13/Feb/2023:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/apache2/access.log'
                 else:
-                    for code in codes:
-                        cmd = f'grep -E "$(date "+%d\/%b\/%Y:%H" -d' + f"'{i} hour ago').*" + f'HTTP.*{code} " /var/log/apache2/access.log'
-                        if code not in final_arr:
-                            try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
-                            except:final_arr[code] = ''
-                        else:
-                            try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
-                            except: final_arr[code] += ''
-            # print(final_arr)
+                    cmd = f'egrep "13/Feb/2023:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/apache2/access.log'
+                # print(cmd)
+                if code not in final_arr:
+                    try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+                    except:final_arr[code] = ''
+                else:
+                    try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
+                    except: final_arr[code] += ''
             context={'status':200,'data':final_arr}
 
     return JsonResponse(context)
