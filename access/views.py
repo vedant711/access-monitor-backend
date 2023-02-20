@@ -60,28 +60,32 @@ def show_custom(request,server):
             # #print(final_arr)
             dt = datetime.now()
             hr = dt.hour
+            # print(dt)
+            # print(hr)
             past=hr - fil
+            dt1 = dt.strftime('%d/%b/%Y')
+            # print(dt1)
             # past = str(past)
             # if len(past) !=2:past1 = '0'+past
             # else:past1 =past
             for code in codes:
                 if past >0:
                     if hr<10 and past<10:
-                        cmd = f'egrep "13/Feb/2023:(0[{past}-{hr}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                        cmd = f'egrep "{dt1}:(0[{past}-{hr}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif hr >=10 and past>=10 and hr<20 and past<20:
-                        cmd = f'egrep "13/Feb/2023:(1[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                        cmd = f'egrep "{dt1}:(1[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif hr>=20 and past>=20:
-                        cmd = f'egrep "13/Feb/2023:(2[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                        cmd = f'egrep "{dt1}:(2[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif past<10 and hr >=10 and hr<20:
-                        cmd = f'egrep "13/Feb/2023:(0[{past}-9]|1[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                        cmd = f'egrep "{dt1}:(0[{past}-9]|1[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif past<10 and hr >=20:
-                        cmd = f'egrep "13/Feb/2023:(0[{past}-9]|1[0-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                        cmd = f'egrep "{dt1}:(0[{past}-9]|1[0-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     elif past>=10 and hr>=20 and past<20:
-                        cmd = f'egrep "13/Feb/2023:(1[{past}-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                        cmd = f'egrep "{dt1}:(1[{past}-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
                     else:
-                        cmd = f'egrep "13/Feb/2023:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
+                        cmd = f'egrep "{dt1}:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
                 else:
-                    cmd = f'egrep "13/Feb/2023:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
+                    cmd = f'egrep "{dt1}:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
                 # print(cmd)
                 if code not in final_arr:
                     try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
@@ -96,10 +100,14 @@ def show_custom(request,server):
 @csrf_exempt
 def show_ipwise(request,server):
     cmd = "awk '{ print $1 } '" +  f" /var/log/{server}/access.log | sort | uniq -c"
+    # print(cmd)
     total_ip = subprocess.check_output(cmd, shell=True, universal_newlines=True)
     cmd = "awk '{ print $1,$9 } '"+ f" /var/log/{server}/access.log | sort | uniq -c"
     r = subprocess.check_output(cmd, shell=True, universal_newlines=True)
-    context={'status':200,'data':[total_ip,r]}
+    cmd = "awk -e '$7 ~/^408/ {print $1,$7}'" +  f" /var/log/{server}/access.log | sort | uniq -c"
+    r_408 = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+    # print(r)
+    context={'status':200,'data':[total_ip,r,r_408]}
     return JsonResponse(context)
 
 @csrf_exempt
