@@ -36,7 +36,7 @@ def show_custom(request,server):
         # print(fil)
         if fil != '':
             final_arr = {}
-            codes = [200,404,500]
+            codes = [200,404,500,301,302]
             fil = int(fil)
             # for i in range(fil,-1,-1):
             #     if i != 1:
