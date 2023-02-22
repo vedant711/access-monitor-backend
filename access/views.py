@@ -33,10 +33,90 @@ def show_custom(request,server):
         form = ast.literal_eval(formData.decode('utf-8'))
         # print(form)
         fil = form['filter']
+        if fil!='':
+            fil=int(fil)
+            dt = datetime.now()
+            hr = dt.hour
+            # print(dt)
+            final_arr ={200:'0',404:'0',301:'0',302:'0',500:'0'}
+            # print(hr)
+            past=hr - fil
+            dt1 = dt.strftime('%d\/%b\/%Y')
+            if past >0:
+                if hr<10 and past<10:
+                    cmd = f"awk -e '$4 ~/{dt1}:0[{past}-{hr}]/ "+"{print $9}' " + f'/var/log/{server}/access.log | sort | uniq -c'
+                    # cmd = f'egrep "{dt1}:(0[{past}-{hr}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                elif hr >=10 and past>=10 and hr<20 and past<20:
+                    cmd = f"awk -e '$4 ~/{dt1}:1[{str(past)[1]}-{str(hr)[1]}]/ "+"{print $9}' " + f'/var/log/{server}/access.log | sort | uniq -c'
+                    # cmd = f'egrep "{dt1}:(1[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                elif hr>=20 and past>=20:
+                    cmd = f"awk -e '$4 ~/{dt1}:2[{str(past)[1]}-{str(hr)[1]}]/ "+"{print $9}' " + f'/var/log/{server}/access.log | sort | uniq -c'
+                    # cmd = f'egrep "{dt1}:(2[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                elif past<10 and hr >=10 and hr<20:
+                    cmd = f"awk -e '$4 ~/{dt1}:0[{past}-9]|1[0-{str(hr)[1]}]/ "+"{print $9}' " + f'/var/log/{server}/access.log | sort | uniq -c'
+                    # cmd = f'egrep "{dt1}:(0[{past}-9]|1[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                elif past<10 and hr >=20:
+                    cmd = f"awk -e '$4 ~/{dt1}:0[{past}-9]|1[0-9]|2[0-{str(hr)[1]}]/ "+"{print $9}' " + f'/var/log/{server}/access.log | sort | uniq -c'
+                    
+                    # cmd = f'egrep "{dt1}:(0[{past}-9]|1[0-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                elif past>=10 and hr>=20 and past<20:
+                    cmd = f"awk -e '$4 ~/{dt1}:1[{past}-9]|2[0-{str(hr)[1]}]/ "+"{print $9}' " + f'/var/log/{server}/access.log | sort | uniq -c'
+                    # cmd = f'egrep "{dt1}:(1[{past}-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
+                else:
+                    cmd = f"awk -e '$4 ~/{dt1}:0[{past}-9]|1[0-{str(hr)[1]}]/ "+"{print $9}' " + f'/var/log/{server}/access.log | sort | uniq -c'
+                    # cmd = f'egrep "{dt1}:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
+            else:
+                cmd = f"awk -e '$4 ~/{dt1}:0[0-9]|1[0-9]|2[0-4]/ "+"{print $9}' " + f'/var/log/{server}/access.log | sort | uniq -c'
+                # cmd = f'egrep "{dt1}:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
+            # print(cmd)
+            # codes 
+            # cmd = "awk -e '$4 ~/22\/Feb\/2023:0[4-5]/ {print $9}' /var/log/apache2/access.log | sort | uniq -c"
+            # print(cmd)
+            op = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            op1 = op.splitlines()
+            for ops in op1:
+                arr = ops.split()
+                if '200' in ops:
+                    if arr[1] == '200':
+                        final_arr[200] = arr[0]
+                if '404' in ops:
+                    if arr[1] == '404':
+                        final_arr[404] = arr[0]
+                if '500' in ops:
+                    if arr[1] == '500':
+                        final_arr[500] = arr[0]
+                if '301' in ops:
+                    if arr[1] == '301':
+                        final_arr[301] = arr[0]
+                if '302' in ops:
+                    if arr[1] == '302':
+                        final_arr[302] = arr[0]
+
+
+                    
+            # if code not in final_arr:
+            #     try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            #     except:final_arr[code] = ''
+            # else:
+            #     try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            #     except: final_arr[code] += ''
+            context={'status':200,'data':final_arr}
+    return JsonResponse(context)
+
+
+@csrf_exempt
+def show_detailed_codewise(request,server):
+    if request.method == "POST":
+        formData = request.body
+        form = ast.literal_eval(formData.decode('utf-8'))
+        # print(form)
+        fil = form['filter']
+        code = form['code']
         # print(fil)
-        if fil != '':
-            final_arr = {}
-            codes = [200,404,500,301,302]
+        # final_arr = []
+        if fil != '' and code != '':
+            final_arr = []
+            # codes = [200,404,500,301,302]
             fil = int(fil)
             # for i in range(fil,-1,-1):
             #     if i != 1:
@@ -68,31 +148,35 @@ def show_custom(request,server):
             # past = str(past)
             # if len(past) !=2:past1 = '0'+past
             # else:past1 =past
-            for code in codes:
-                if past >0:
-                    if hr<10 and past<10:
-                        cmd = f'egrep "{dt1}:(0[{past}-{hr}]).*HTTP.*{code}" /var/log/{server}/access.log'
-                    elif hr >=10 and past>=10 and hr<20 and past<20:
-                        cmd = f'egrep "{dt1}:(1[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
-                    elif hr>=20 and past>=20:
-                        cmd = f'egrep "{dt1}:(2[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
-                    elif past<10 and hr >=10 and hr<20:
-                        cmd = f'egrep "{dt1}:(0[{past}-9]|1[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
-                    elif past<10 and hr >=20:
-                        cmd = f'egrep "{dt1}:(0[{past}-9]|1[0-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
-                    elif past>=10 and hr>=20 and past<20:
-                        cmd = f'egrep "{dt1}:(1[{past}-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log'
-                    else:
-                        cmd = f'egrep "{dt1}:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
+            # for code in codes:
+            if past >0:
+                if hr<10 and past<10:
+                    cmd = f'egrep "{dt1}:(0[{past}-{hr}]).*HTTP.*${code}" /var/log/{server}/access.log' + f" | awk -e '$9 ~/{code}/'"
+                elif hr >=10 and past>=10 and hr<20 and past<20:
+                    cmd = f'egrep "{dt1}:(1[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log' + f" | awk -e '$9 ~/{code}/'"
+                elif hr>=20 and past>=20:
+                    cmd = f'egrep "{dt1}:(2[{str(past)[1]}-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log' + f" | awk -e '$9 ~/{code}/'"
+                elif past<10 and hr >=10 and hr<20:
+                    cmd = f'egrep "{dt1}:(0[{past}-9]|1[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log' + f" | awk -e '$9 ~/{code}/'"
+                elif past<10 and hr >=20:
+                    cmd = f'egrep "{dt1}:(0[{past}-9]|1[0-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log' + f" | awk -e '$9 ~/{code}/'"
+                elif past>=10 and hr>=20 and past<20:
+                    cmd = f'egrep "{dt1}:(1[{past}-9]|2[0-{str(hr)[1]}]).*HTTP.*{code}" /var/log/{server}/access.log' + f" | awk -e '$9 ~/{code}/'"
                 else:
-                    cmd = f'egrep "{dt1}:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log'
-                # print(cmd)
-                if code not in final_arr:
-                    try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
-                    except:final_arr[code] = ''
-                else:
-                    try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
-                    except: final_arr[code] += ''
+                    cmd = f'egrep "{dt1}:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log' + f" | awk -e '$9 ~/{code}/'"
+            else:
+                cmd = f'egrep "{dt1}:(0[0-9]|1[0-9]|2[0-4]).*HTTP.*{code}" /var/log/{server}/access.log' + f" | awk -e '$9 ~/{code}/'"
+            # print(cmd)
+            # if code not in final_arr:
+            #     try:final_arr[code] = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            #     except:final_arr[code] = ''
+            # else:
+            #     try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            #     except: final_arr[code] += ''
+            print(cmd)
+            print(code)
+            try: final_arr.append(subprocess.check_output(cmd,shell=True,universal_newlines=True))
+            except:pass
             context={'status':200,'data':final_arr}
 
     return JsonResponse(context)

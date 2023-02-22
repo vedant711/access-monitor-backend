@@ -9,6 +9,8 @@ urlpatterns= [
     path('<server>/blockip/',views.block_ip),
     path('<server>/unblockip/',views.unblock_ips),
     path('<server>/firewall/',views.firewall),
+    path('<server>/show-detailed/',views.show_detailed_codewise),
+
 
 
 
