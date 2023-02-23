@@ -17,55 +17,78 @@ from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import authenticate,login
 
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def testEndPoint(request):
-    if request.method == 'GET':
-        data = f"Congratulation {request.user}, your API just responded to GET request"
-        return Response({'response': data}, status=status.HTTP_200_OK)
-    elif request.method == 'POST':
-        text = request.POST.get('text')
-        data = f'Congratulation your API just responded to POST request with text: {text}'
-        return Response({'response': data}, status=status.HTTP_200_OK)
-    return Response({}, status.HTTP_400_BAD_REQUEST)
+# @api_view(['GET', 'POST'])
+# @permission_classes([IsAuthenticated])
+# def testEndPoint(request):
+#     if request.method == 'GET':
+#         data = f"Congratulation {request.user}, your API just responded to GET request"
+#         return Response({'response': data}, status=status.HTTP_200_OK)
+#     elif request.method == 'POST':
+#         text = request.POST.get('text')
+#         data = f'Congratulation your API just responded to POST request with text: {text}'
+#         return Response({'response': data}, status=status.HTTP_200_OK)
+#     return Response({}, status.HTTP_400_BAD_REQUEST)
 
-# Create your views here.
+# # Create your views here.
 
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
+# class MyTokenObtainPairView(TokenObtainPairView):
+#     serializer_class = MyTokenObtainPairSerializer
 
-@api_view(['GET'])
-def getRoutes(request):
-    routes = [
-        '/token/',
-        '/token/refresh/'
-    ]
-    return Response(routes)
+# @api_view(['GET'])
+# def getRoutes(request):
+#     routes = [
+#         '/token/',
+#         '/token/refresh/'
+#     ]
+#     return Response(routes)
+@csrf_exempt
+def login_view(request):
+    if request.method == "POST":
+        username, password = request.POST['username'],request.POST['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(request,user)
+            return redirect('/')
+    return render(request,'login.html')
 
+@staff_member_required(login_url='login/')
+def index_home(request):
+    return render(request,'select.html')
+
+@staff_member_required(login_url='login/')
+def index_server_home(request,server):
+    context = {'server':server}
+    return render(request,'index.html', context)
 
 # @login_required
-def index(request,server):
+@staff_member_required(login_url='login/')
+def complete_logs(request,server):
     # a = os.popen('cat /var/log/{server}/access.log').read()
     # print(a,type(a))
     # print(server)
     returned_text = subprocess.check_output(f"cat /var/log/{server}/access.log", shell=True, universal_newlines=True)
     # print("dir command to list file and directory")
     # print(returned_text)
-    context={'status':200,'data':returned_text}
+    context={'data':returned_text}
 
     # print(a.split('\n'))
     # print(context)
     # return render(request,'index.html',context=context)
-    return JsonResponse(context)
+    # return JsonResponse(context)
+    return render(request,'complete-log.html',context)
 
+@staff_member_required(login_url='login/')
 @csrf_exempt
 def show_custom(request,server):
+    context = {}
     if request.method == "POST":
-        formData = request.body
-        form = ast.literal_eval(formData.decode('utf-8'))
+        # formData = request.body
+        # form = ast.literal_eval(formData.decode('utf-8'))
         # print(form)
-        fil = form['filter']
+        fil = request.POST['filter']
         if fil!='':
             fil=int(fil)
             dt = datetime.now()
@@ -133,15 +156,18 @@ def show_custom(request,server):
             # else:
             #     try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
             #     except: final_arr[code] += ''
-            context={'status':200,'data':final_arr}
-    return JsonResponse(context)
+            context={'data':final_arr,'server':server,'filter':fil}
+    # return JsonResponse(context)
+    return render(request,'summary.html',context)
 
-
+@staff_member_required(login_url='login/')
 @csrf_exempt
 def show_detailed_codewise(request,server):
+    context ={}
     if request.method == "POST":
-        formData = request.body
-        form = ast.literal_eval(formData.decode('utf-8'))
+        # formData = request.body
+        # form = ast.literal_eval(formData.decode('utf-8'))
+        form = request.POST
         # print(form)
         fil = form['filter']
         code = form['code']
@@ -210,56 +236,83 @@ def show_detailed_codewise(request,server):
             print(code)
             try: final_arr.append(subprocess.check_output(cmd,shell=True,universal_newlines=True))
             except:pass
-            context={'status':200,'data':final_arr}
+            context={'data':final_arr[0]}
 
-    return JsonResponse(context)
+    # return JsonResponse(context)
+    return render(request,'codewise.html',context)
 
+@staff_member_required(login_url='login/')
 @csrf_exempt
 def show_ipwise(request,server):
     cmd = "awk '{ print $1 } '" +  f" /var/log/{server}/access.log | sort | uniq -c"
     # print(cmd)
     total_ip = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+    arr_total_ip = total_ip.split('\n')
+    # final_total = arr_total_ip.split()
     cmd = "awk '{ print $1,$9 } '"+ f" /var/log/{server}/access.log | sort | uniq -c"
     r = subprocess.check_output(cmd, shell=True, universal_newlines=True)
-    cmd = "awk -e '$7 ~/^408/ {print $1,$7}'" +  f" /var/log/{server}/access.log | sort | uniq -c"
-    r_408 = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+    # cmd = "awk -e '$7 ~/^408/ {print $1,$7}'" +  f" /var/log/{server}/access.log | sort | uniq -c"
+    # r_408 = subprocess.check_output(cmd, shell=True, universal_newlines=True)
     # print(r)
-    context={'status':200,'data':[total_ip,r,r_408]}
-    return JsonResponse(context)
+    cmd = "sudo iptables -L INPUT -v -n | grep DROP | awk '{ print $8 }'"
+    blocked_ip = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+    # blocked_ip = ''
+    # print(blocked_ip)
+    blocked_ip = blocked_ip.split()
+    # print(blocked_ip)
+    context = {'total_ip':arr_total_ip,'detailed':r,'blocked_ips':blocked_ip,'server':server}
+    # context={'status':200,'data':[total_ip,r,r_408]}
+    # return JsonResponse(context)
+    return render(request,'ipwise.html',context)
 
+@staff_member_required(login_url='login/')
 @csrf_exempt
 def block_ip(request,server):
     if request.method == "POST":
-        formData = request.body
-        form = ast.literal_eval(formData.decode('utf-8'))
-        ip = form['ip']
-        os.system(f'iptables -A INPUT -s {ip} -j DROP')
-        os.system('service iptables save')
+        # formData = request.body
+        # form = ast.literal_eval(formData.decode('utf-8'))
+        ip = request.POST['ip']
+        cmd = "sudo iptables -L INPUT -v -n | grep DROP | awk '{ print $8 }'"
+        blocked_ip = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+
+        blocked_ip = blocked_ip.split()
+        if ip not in blocked_ip:
+        # print(ip)
+        # print(cmd)
+            os.system(f'sudo iptables -A INPUT -s {ip} -j DROP')
+        # os.system('sudo service iptables save')
+
         # blocked_ips = subprocess.check_output("iptables -L INPUT -v -n", shell=True, universal_newlines=True)
-        context = {'status':200,'msg':'successfully blocked'}
-        return JsonResponse(context)
+        # context = {'status':200,'msg':'successfully blocked'}
+        # return JsonResponse(context)
+        return redirect(f'/show_ipwise/{server}/')
 
-@csrf_exempt
-def blocked_ips(request,server):
-    blocked_ip = subprocess.check_output("iptables -L INPUT -v -n", shell=True, universal_newlines=True)
-    # print(blocked_ip)
-    context={'status':200,'data':blocked_ip}
-    return JsonResponse(context)
+# @csrf_exempt
+# def blocked_ips(request,server):
+#     blocked_ip = subprocess.check_output("iptables -L INPUT -v -n | grep DROP | awk '{ print $8 }'", shell=True, universal_newlines=True)
+#     # print(blocked_ip)
+#     context={'status':200,'data':blocked_ip}
+#     return JsonResponse(context)
 
+@staff_member_required(login_url='login/')
 @csrf_exempt
 def unblock_ips(request,server):
     if request.method == "POST":
-        formData = request.body
-        form = ast.literal_eval(formData.decode('utf-8'))
-        ip = form['ip']
+        # formData = request.body
+        # form = ast.literal_eval(formData.decode('utf-8'))
+        ip = request.POST['ip']
         # print(ip)
-        os.system(f'iptables -D INPUT -s {ip} -j DROP')
-        os.system('service iptables save')
-        context = {'status':200,'msg':'successfully unblocked'}
-        return JsonResponse(context)
+        os.system(f'sudo iptables -D INPUT -s {ip} -j DROP')
+        # os.system('service iptables save')
+        # context = {'status':200,'msg':'successfully unblocked'}
+        # return JsonResponse(context)
+        return redirect(f'/show_ipwise/{server}/')
 
+
+@staff_member_required(login_url='login/')
 @csrf_exempt
 def firewall(request,server):
     blocked_ip = subprocess.check_output("iptables -L INPUT -v -n | grep DROP | awk '{ print $8 }'", shell=True, universal_newlines=True)
-    context = {'status':200,'data':blocked_ip}
-    return JsonResponse(context)
+    context = {'data':blocked_ip.split()}
+    # return JsonResponse(context)
+    return render(request,'firewall.html',context)

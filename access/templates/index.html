@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,38 +6,38 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{% static 'style.css/' %}" type="text/css">
+    <!-- <link rel="stylesheet" href="../static/style.css" type="text/css"> -->
+
 </head>
 <body>
-    <script>
-        const toggle = () => {
-            let btn = document.getElementById('toggle-btn')
-            let logs = document.getElementById('all_log')
-            if (logs.style.display === 'none'){
-                logs.style.display = 'block'
-                btn.innerHTML = 'Collapse logs'
-            }
-            else{
-                logs.style.display = 'none'
-                btn.innerHTML = 'View all logs'
-            }
+    <div style='width:"100%"' class="main-content">
+        <div class="header">
+        <a href="/show_ipwise/{{server}}/"><p>View IP wise hits</p></a>
+        <a href="/firewall/{{server}}/"><p>See all blocked IPs</p></a>
+        <a href="/complete_logs/{{server}}/"><p>View Complete Log</p></a>
+        <a href=""><p>Logout</p></a>
+        </div>
+    <div class='container'>
+        <h1>Welcome to the Access Monitor for {{server}} Server</h1>
+        <h2>Have a look at today's log</h2>
 
-        }
-    </script>
-    <h1>Welcome to the Access Monitor</h1>
-    <h2>Have a look at today's log</h2>
-    <button onclick=toggle() id='toggle-btn'>View all logs</button>
-    <div style="display:none" id='all_log'>{{access_log|linebreaks}}</div>
-    <form action="show_custom" method="post">
-        {% csrf_token %}
-        <h2>Filters</h2>
-        <input type="radio" name="filter" id="" value="1">1 hr
-        <input type="radio" name="filter" id="" value="4">4 hr
-        <input type="radio" name="filter" id="" value="6">6 hr
-        <input type="radio" name="filter" id="" value="8">8 hr
-        <input type="radio" name="filter" id="" value="12">12 hr
-        <input type="radio" name="filter" id="" value="24">24 hr
-        <input type="submit" value="Get the Summary">
+        <!-- {/* <button id='toggle-btn' onClick={change}>View all logs</button> */}
+        {/* <div style="display:none" id='all_log'>{{access_log|linebreaks}}</div> */}
+        {/* <form action="show_custom" method="post"> */} -->
+            <h2>Filters</h2>
+            <form action=/show_custom/{{server}}/ method="post">
+            <div><input type="radio" name="filter" id="1" value="1"/><label htmlFor='1'>1 hr</label></div>
+            <div><input type="radio" name="filter" id="4" value="4"/><label htmlFor='4'>4 hrs</label> </div>
+            <div><input type="radio" name="filter" id="6" value="6"/><label htmlFor='6'>6 hrs</label></div>
+            <div><input type="radio" name="filter" id="8" value="8"/><label htmlFor='8'>8 hrs</label></div>
+            <div><input type="radio" name="filter" id="12" value="12" /><label htmlFor='12'>12 hrs</label></div>
+            <div><input type="radio" name="filter" id="24" value="24" /><label htmlFor='24'>24 hrs</label></div>
+            <input type="submit" value="Get the Summary"/>
 
-    </form>
+        </form> 
+        <a href='/'><button >Go back to Server Selection</button></a>
+    </div>
+    </div>
 </body>
 </html>
