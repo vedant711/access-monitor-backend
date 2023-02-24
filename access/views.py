@@ -18,7 +18,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import authenticate,login
+from django.contrib.auth import authenticate,login,logout
 
 # @api_view(['GET', 'POST'])
 # @permission_classes([IsAuthenticated])
@@ -46,6 +46,8 @@ from django.contrib.auth import authenticate,login
 #     return Response(routes)
 @csrf_exempt
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('/')
     if request.method == "POST":
         username, password = request.POST['username'],request.POST['password']
         user = authenticate(username=username, password=password)
@@ -54,33 +56,45 @@ def login_view(request):
             return redirect('/')
     return render(request,'login.html')
 
-@staff_member_required(login_url='login/')
+@csrf_exempt
+def logout_view(request):
+    logout(request)
+    return redirect('/login/')
+
+@staff_member_required(login_url='/login/')
 def index_home(request):
     return render(request,'select.html')
 
-@staff_member_required(login_url='login/')
+@staff_member_required(login_url='/login/')
 def index_server_home(request,server):
     context = {'server':server}
     return render(request,'index.html', context)
 
 # @login_required
-@staff_member_required(login_url='login/')
+@staff_member_required(login_url='/login/')
 def complete_logs(request,server):
     # a = os.popen('cat /var/log/{server}/access.log').read()
     # print(a,type(a))
     # print(server)
-    returned_text = subprocess.check_output(f"cat /var/log/{server}/access.log", shell=True, universal_newlines=True)
-    # print("dir command to list file and directory")
-    # print(returned_text)
-    context={'data':returned_text}
+    try:
+        returned_text = subprocess.check_output(f"sudo cat /var/log/{server}/access.log", shell=True, universal_newlines=True)
+        # print("dir command to list file and directory")
+        # print(returned_text)
+        context={'data':returned_text}
 
-    # print(a.split('\n'))
-    # print(context)
-    # return render(request,'index.html',context=context)
-    # return JsonResponse(context)
+        # print(a.split('\n'))
+        # print(context)
+        # return render(request,'index.html',context=context)
+        # return JsonResponse(context)
+    except:
+        os.system(f'chmod ugo+rwx /var/log/{server}/access.log')
+        returned_text = subprocess.check_output(f"cat /var/log/{server}/access.log", shell=True, universal_newlines=True)
+        # print("dir command to list file and directory")
+        # print(returned_text)
+        context={'data':returned_text}
     return render(request,'complete-log.html',context)
 
-@staff_member_required(login_url='login/')
+@staff_member_required(login_url='/login/')
 @csrf_exempt
 def show_custom(request,server):
     context = {}
@@ -128,7 +142,7 @@ def show_custom(request,server):
             # codes 
             # cmd = "awk -e '$4 ~/22\/Feb\/2023:0[4-5]/ {print $9}' /var/log/apache2/access.log | sort | uniq -c"
             # print(cmd)
-            op = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+            op = subprocess.check_output('sudo ' + cmd, shell=True, universal_newlines=True)
             op1 = op.splitlines()
             for ops in op1:
                 arr = ops.split()
@@ -160,7 +174,7 @@ def show_custom(request,server):
     # return JsonResponse(context)
     return render(request,'summary.html',context)
 
-@staff_member_required(login_url='login/')
+@staff_member_required(login_url='/login/')
 @csrf_exempt
 def show_detailed_codewise(request,server):
     context ={}
@@ -234,23 +248,23 @@ def show_detailed_codewise(request,server):
             #     except: final_arr[code] += ''
             print(cmd)
             print(code)
-            try: final_arr.append(subprocess.check_output(cmd,shell=True,universal_newlines=True))
+            try: final_arr.append(subprocess.check_output('sudo ' + cmd,shell=True,universal_newlines=True))
             except:pass
             context={'data':final_arr[0]}
 
     # return JsonResponse(context)
     return render(request,'codewise.html',context)
 
-@staff_member_required(login_url='login/')
+@staff_member_required(login_url='/login/')
 @csrf_exempt
 def show_ipwise(request,server):
     cmd = "awk '{ print $1 } '" +  f" /var/log/{server}/access.log | sort | uniq -c"
     # print(cmd)
-    total_ip = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+    total_ip = subprocess.check_output('sudo ' + cmd, shell=True, universal_newlines=True)
     arr_total_ip = total_ip.split('\n')
     # final_total = arr_total_ip.split()
     cmd = "awk '{ print $1,$9 } '"+ f" /var/log/{server}/access.log | sort | uniq -c"
-    r = subprocess.check_output(cmd, shell=True, universal_newlines=True)
+    r = subprocess.check_output('sudo ' + cmd, shell=True, universal_newlines=True)
     # cmd = "awk -e '$7 ~/^408/ {print $1,$7}'" +  f" /var/log/{server}/access.log | sort | uniq -c"
     # r_408 = subprocess.check_output(cmd, shell=True, universal_newlines=True)
     # print(r)
@@ -265,7 +279,7 @@ def show_ipwise(request,server):
     # return JsonResponse(context)
     return render(request,'ipwise.html',context)
 
-@staff_member_required(login_url='login/')
+@staff_member_required(login_url='/login/')
 @csrf_exempt
 def block_ip(request,server):
     if request.method == "POST":
@@ -294,7 +308,7 @@ def block_ip(request,server):
 #     context={'status':200,'data':blocked_ip}
 #     return JsonResponse(context)
 
-@staff_member_required(login_url='login/')
+@staff_member_required(login_url='/login/')
 @csrf_exempt
 def unblock_ips(request,server):
     if request.method == "POST":
@@ -309,10 +323,10 @@ def unblock_ips(request,server):
         return redirect(f'/show_ipwise/{server}/')
 
 
-@staff_member_required(login_url='login/')
+@staff_member_required(login_url='/login/')
 @csrf_exempt
 def firewall(request,server):
-    blocked_ip = subprocess.check_output("iptables -L INPUT -v -n | grep DROP | awk '{ print $8 }'", shell=True, universal_newlines=True)
-    context = {'data':blocked_ip.split()}
+    blocked_ip = subprocess.check_output("sudo iptables -L INPUT -v -n | grep DROP | awk '{ print $8 }'", shell=True, universal_newlines=True)
+    context = {'data':blocked_ip.split(),'server':server}
     # return JsonResponse(context)
     return render(request,'firewall.html',context)
