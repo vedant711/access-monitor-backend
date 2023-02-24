@@ -14,6 +14,12 @@
         const show_detailed =(ip) => {
             let details = `{{detailed}}` 
             // console.log(details)
+            document.getElementById('404_hits').innerHTML = 0;
+            document.getElementById('500_hits').innerHTML = 0;
+            document.getElementById('200_hits').innerHTML = 0;
+            document.getElementById('301_hits').innerHTML = 0;
+            document.getElementById('302_hits').innerHTML = 0;
+
         let regex = new RegExp(".*"+ip+".*404.*\n");
         if (details.match(regex)) {
             let reg = regex.exec(details)[0]
@@ -50,9 +56,10 @@
             document.getElementById('302_hits').innerHTML = reg1[reg1.length - 3]
             // console.log(regex.exec(details)[0])
         }
-        document.getElementById('ip').innerHTML = ip
-        window.scrollTo(0,0);
-        document.getElementById('detailed_hits').style.display = 'block'    
+        document.getElementById('ip').innerHTML = ip;
+        // window.scrollTo(0,0);
+        // document.getElementById('detailed_hits').style.top = window.scrollY;
+        document.getElementById('detailed_hits').style.display = 'block';    
         }
 
         const block = (ip) => {
