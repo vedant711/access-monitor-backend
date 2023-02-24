@@ -9,8 +9,8 @@ from rest_framework import status
 from django.views.decorators.csrf import csrf_exempt
 import ast
 from datetime import datetime,timedelta
-from .serializers import MyTokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+# from .serializers import MyTokenObtainPairSerializer
+# from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import generics
 from django.contrib.auth.models import User
 # from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -80,7 +80,7 @@ def complete_logs(request,server):
         returned_text = subprocess.check_output(f"sudo cat /var/log/{server}/access.log", shell=True, universal_newlines=True)
         # print("dir command to list file and directory")
         # print(returned_text)
-        context={'data':returned_text}
+        context={'data':returned_text,'server':server}
 
         # print(a.split('\n'))
         # print(context)
@@ -91,7 +91,7 @@ def complete_logs(request,server):
         returned_text = subprocess.check_output(f"cat /var/log/{server}/access.log", shell=True, universal_newlines=True)
         # print("dir command to list file and directory")
         # print(returned_text)
-        context={'data':returned_text}
+        context={'data':returned_text,'server':server}
     return render(request,'complete-log.html',context)
 
 @staff_member_required(login_url='/login/')
@@ -250,7 +250,7 @@ def show_detailed_codewise(request,server):
             print(code)
             try: final_arr.append(subprocess.check_output('sudo ' + cmd,shell=True,universal_newlines=True))
             except:pass
-            context={'data':final_arr[0]}
+            context={'data':final_arr[0],'server':server}
 
     # return JsonResponse(context)
     return render(request,'codewise.html',context)
@@ -330,3 +330,17 @@ def firewall(request,server):
     context = {'data':blocked_ip.split(),'server':server}
     # return JsonResponse(context)
     return render(request,'firewall.html',context)
+
+@staff_member_required(login_url='/login/')
+@csrf_exempt
+def unblock_ips_fw(request,server):
+    if request.method == "POST":
+        # formData = request.body
+        # form = ast.literal_eval(formData.decode('utf-8'))
+        ip = request.POST['ip']
+        # print(ip)
+        os.system(f'sudo iptables -D INPUT -s {ip} -j DROP')
+        # os.system('service iptables save')
+        # context = {'status':200,'msg':'successfully unblocked'}
+        # return JsonResponse(context)
+        return redirect(f'/firewall/{server}/')

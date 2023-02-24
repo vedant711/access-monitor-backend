@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}" type="text/css">
+
+</head>
+<body>
+    <script>
+        const send_code = (code) => {
+            document.getElementById('code').value = code;
+            document.getElementById('detailed_form').submit();
+        }
+
+        
+    </script>
+    <div id="root">
+    <div class="fill_bottom">
+    <div style='white-space:pre-wrap' class='container-summary'>
+        <h1>Total number of requests are: </h1>
+        <table>
+            <tr>
+            <th>Status Code</th>
+            <th>Number of Requests</th>
+            <th>Details</th>
+            </tr>
+            {% if data %}
+            <tr>
+                <td>200</td>
+                <td>{{data.200}}</td>
+                <td><button onclick="send_code('200')">Show Details</button></td>
+            </tr>
+            <tr>
+                <td>404</td>
+                <td>{{data.404}}</td>
+                <td><button onclick="send_code('404')">Show Details</button></td>
+            </tr>
+            <tr>
+                <td>500</td>
+                <td>{{data.500}}</td>
+                <td><button onclick="send_code('500')">Show Details</button></td>
+            </tr>
+            <tr>
+                <td>301</td>
+                <td>{{data.301}}</td>
+                <td><button onclick="send_code('301')">Show Details</button></td>
+            </tr>
+            <tr>
+                <td>302</td>
+                <td>{{data.302}}</td>
+                <td><button onclick="send_code('302')">Show Details</button></td>
+            </tr>
+            {% endif %}
+            </table>
+        <center><button onclick="javascript:history.go(-1);">Go Back</button></center>
+
+            <form action=/show-detailed/{{server}}/ method="post" id="detailed_form" style="display: none;">
+                <input type="text" name="code" id="code">
+                <input type="text" name="filter" id="filter" value="{{filter}}">
+            </form>
+
+        </div>
+        </div>
+    </div>
+
+</body>
+</html>

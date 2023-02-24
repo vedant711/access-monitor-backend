@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}" type="text/css">
+
+</head>
+<body>
+    <script>
+        const show_detailed =(ip) => {
+            let details = `{{detailed}}` 
+            // console.log(details)
+        let regex = new RegExp(".*"+ip+".*404.*\n");
+        if (details.match(regex)) {
+            let reg = regex.exec(details)[0]
+            let reg1 = reg.split(' ')
+            document.getElementById('404_hits').innerHTML = reg1[reg1.length - 3]
+            // console.log(regex.exec(details)[0])
+            // regex.exec(details)[0]
+        }
+        regex = new RegExp('.*'+ip+".*200.*\n");
+        if (details.match(regex)) {
+            let reg = regex.exec(details)[0]
+            let reg1 = reg.split(' ')
+            document.getElementById('200_hits').innerHTML = reg1[reg1.length - 3]
+            // console.log(regex.exec(details)[0])
+        }
+        regex = new RegExp('.*'+ip+".*500.*\n");
+        if (details.match(regex)) {
+            let reg = regex.exec(details)[0]
+            let reg1 = reg.split(' ')
+            document.getElementById('500_hits').innerHTML = reg1[reg1.length - 3]
+            // console.log(regex.exec(details)[0])
+        }
+        regex = new RegExp('.*'+ip+".*301.*\n");
+        if (details.match(regex)) {
+            let reg = regex.exec(details)[0]
+            let reg1 = reg.split(' ')
+            document.getElementById('301_hits').innerHTML = reg1[reg1.length - 3]
+            // console.log(regex.exec(details)[0])
+        }
+        regex = new RegExp('.*'+ip+".*302.*\n");
+        if (details.match(regex)) {
+            let reg = regex.exec(details)[0]
+            let reg1 = reg.split(' ')
+            document.getElementById('302_hits').innerHTML = reg1[reg1.length - 3]
+            // console.log(regex.exec(details)[0])
+        }
+        document.getElementById('ip').innerHTML = ip
+        window.scrollTo(0,0);
+        document.getElementById('detailed_hits').style.display = 'block'    
+        }
+
+        const block = (ip) => {
+            document.getElementById('to_block').value = ip;
+            document.getElementById('block').submit();
+            // location.reload();
+        }
+
+        const unblock = (ip) => {
+            document.getElementById('to_unblock').value = ip;
+            document.getElementById('unblock').submit();
+            // location.reload();
+        }
+        // window.onload
+    //     if  (document.getElementById('detailed_hits').style.display === 'block') {
+    //     document.onclick=(e) => {
+    //         if (e.target.id !== 'popup' && e.target.id!=='all_logs_for_status'){
+    //             document.getElementById('detailed_hits').style.display = 'none'
+    //         }
+    //     }
+    // }
+    // const hide = (id) => {
+    //     // console.log(e.srcElement.id)
+    //     console.log(id)
+    //     // console.log(this.id)
+    //     // if (id === this) {
+    //     if (id!=='all_logs_for_status'){
+    //         // console.log(id)
+    //             document.getElementById('detailed_hits').style.display = 'none'
+    //         }
+    // }
+
+// }
+
+    </script>
+    <div id='root'>
+    <div class="fill_bottom">
+        <div class='container-summary'>
+            
+             <h1>Have a look at IP wise hits today</h1>
+                <table id='all_log'>
+                    <tr>
+                        <th>IP</th>
+                        <th>Number of Hits</th>
+                        <th></th>
+                        <th>Block</th>
+                    </tr>
+                    {% for str in total_ip %}
+                    {% with s=str.split %}
+                    {% if s %}
+                    <tr><td>{{s.1}}</td>
+                    <td>
+                    {{s.0}}
+                    </td>
+                    <td>
+
+                        {% with ip=s.1 %}
+                        
+                    <button onclick=show_detailed("{{ip}}")>Show Details</button>
+                    {% endwith %}
+                    </td>
+                    <td>
+                        {% if s.1 in blocked_ips %}
+                        
+                        <button onclick="unblock('{{s.1}}')">Unblock</button>
+                        {% else %}
+                        <button onclick="block('{{s.1}}')">Block</button>
+                        {% endif %}
+
+                    </td>
+                    
+                        </tr>
+                        {% endif %}
+                        {% endwith %}
+                        {% endfor %}
+
+
+                        
+                </table>
+                <a href="/access/{{server}}/"><button>Go Home</button></a>
+                
+        
+        </div>
+        
+        <form action="/blockip/{{server}}/" method="post" id="block" style="display:none">
+            <input type="text" name="ip" id="to_block">
+
+        </form>
+        <form action="/unblockip/{{server}}/" method="post" id="unblock" style="display:none">
+            <input type="text" name="ip" id="to_unblock">
+
+        </form>
+        </div>
+    </div>
+    <div class="overlay" style="display: none;" id="detailed_hits">
+
+        <div class="hello">
+        <table id="all_logs_for_status">
+            <p class="close" onclick="document.getElementById('detailed_hits').style.display='none'"></p>
+
+            <tr>
+            
+            <th colspan="2"><h2 id="ip"></h2></th>
+            </tr>
+            <tr>
+                <!-- <th>IP</th> -->
+                <th>Number of Hits</th>
+                <th>Status Code</th>
+            </tr>
+            <tr id="200">
+                <!-- <td id="200_ip"></td> -->
+                <td id="200_hits" align="center">0</td>
+                <td align="center">200</td>
+            </tr>
+            <tr id="500">
+                <!-- <td id="500_ip"></td> -->
+                <td id="500_hits" align="center">0</td>
+                <td align="center">500</td>
+            </tr>
+            <tr id="404">
+                <!-- <td id="404_ip"></td> -->
+                <td id="404_hits" align="center">0</td>
+                <td align="center">404</td>
+            </tr>
+            <tr id="301">
+                <!-- <td id="301_ip"></td> -->
+                <td id="301_hits" align="center">0</td>
+                <td align="center">301</td>
+            </tr>
+            <tr id="302">
+                <!-- <td id="302_ip"></td> -->
+                <td id="302_hits" align="center">0</td>
+                <td align="center">302</td>
+            </tr>
+
+            
+            </table>
+        </div>
+    </div>
+</body>
+</html>

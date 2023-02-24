@@ -19,6 +19,8 @@ urlpatterns= [
     path('unblockip/<server>/',views.unblock_ips),
     path('firewall/<server>/',views.firewall),
     path('show-detailed/<server>/',views.show_detailed_codewise),
+    path('unblockipfw/<server>/',views.unblock_ips_fw),
+
     # path('api/token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # path('api/test/', views.testEndPoint),

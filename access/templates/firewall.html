@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}" type="text/css">
+
+</head>
+<body>
+    <script>
+        const unblock = (ip) => {
+            document.getElementById('to_unblock').value = ip;
+            document.getElementById('unblock').submit();
+            // location.reload();
+        }
+    </script>
+    <div id="root">
+    <div class='container'>
+        {% if data %}
+        <table>
+            <tr>
+                <th>Blocked IP</th>
+                <th>Unblock</th>
+            </tr>
+            {% for str in data %}
+            <tr>
+                <td>{{str}}</td>
+                <td><button onclick='unblock("{{str}}")'>Unblock</button></td>
+            </tr>
+            {% endfor %}
+            
+        </table>
+        {% else %}
+        <h3>No IP in the Blacklist</h3>
+        {% endif %}
+    <!-- <button onClick='javascript:history.go(-1)'>Go Home</button> -->
+    <a href="/access/{{server}}/"><button>Go Home</button></a>
+
+    <form action="/unblockipfw/{{server}}/" method="post" id="unblock" style="display:none">
+        <input type="text" name="ip" id="to_unblock">
+
+    </form>
+    </div>
+</div>
+</body>
+</html>

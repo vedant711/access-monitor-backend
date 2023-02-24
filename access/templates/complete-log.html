@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}?version=1" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+</head>
+<body>
+    <div class="heading">
+        <a href="/access/{{server}}/"><h1><i class="fa fa-arrow-left" aria-hidden="true"></i></h1></a>
+        <h1>Complete Logs</h1>
+    </div>
+    
+    <div id='all_logs_for_today' style=white-space:pre-wrap>{{data}}
+        <center><button onClick='javascript:history.go(-1)'>Go Home</button></center>
+        </div>
+</body>
+</html>
