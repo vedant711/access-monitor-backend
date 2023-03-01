@@ -20,13 +20,18 @@
     <div class="fill_bottom">
     <div style='white-space:pre-wrap' class='container-summary'>
         <h1>Total number of requests are: </h1>
+        {% if messages %}
+        {% for message in messages %}
+            <h4{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</h4>
+        {% endfor %}
+    {% endif %}
+    {% if data %}
         <table>
             <tr>
             <th>Status Code</th>
             <th>Number of Requests</th>
             <th>Details</th>
             </tr>
-            {% if data %}
             <tr>
                 <td>200</td>
                 <td>{{data.200}}</td>
@@ -52,8 +57,9 @@
                 <td>{{data.302}}</td>
                 <td><button onclick="send_code('302')">Show Details</button></td>
             </tr>
-            {% endif %}
+            
             </table>
+            {% endif %}
         <center><button onclick="javascript:history.go(-1);">Go Back</button></center>
 
             <form action=/show-detailed/{{server}}/ method="post" id="detailed_form" style="display: none;">

@@ -11,6 +11,11 @@
 </head>
 <body>
     <div id="root">
+        {% if messages %}
+        {% for message in messages %}
+            <h4{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</h4>
+        {% endfor %}
+    {% endif %}
     <form class="container" method="post" action="/login/">
         <h1>Login </h1>
         {% csrf_token %}

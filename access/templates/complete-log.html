@@ -16,7 +16,13 @@
         <h1>Complete Logs</h1>
     </div>
     
-    <div id='all_logs_for_today' style=white-space:pre-wrap>{{data}}
+    <div id='all_logs_for_today' style=white-space:pre-wrap>
+        {% if messages %}
+        {% for message in messages %}
+            <h4{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</h4>
+        {% endfor %}
+    {% endif %}
+        {{data}}
         <center><button onClick='javascript:history.go(-1)'>Go Home</button></center>
         </div>
 </body>

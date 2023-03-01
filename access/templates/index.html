@@ -21,6 +21,11 @@
     <div class='container'>
         <h1>Welcome to the Access Monitor for {{server}} Server</h1>
         <h2>Have a look at today's log</h2>
+        {% if messages %}
+        {% for message in messages %}
+            <h4{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</h4>
+        {% endfor %}
+    {% endif %}
 
         <!-- {/* <button id='toggle-btn' onClick={change}>View all logs</button> */}
         {/* <div style="display:none" id='all_log'>{{access_log|linebreaks}}</div> */}
