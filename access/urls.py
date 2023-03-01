@@ -1,6 +1,9 @@
 from django.urls import path
 
 from . import views
+from django.views.generic.base import RedirectView
+
+# favicon_view = RedirectView.as_view(url='/static/favicon.ico', permanent=True)
 
 # from rest_framework_simplejwt.views import (
 #     TokenRefreshView,
@@ -20,6 +23,7 @@ urlpatterns= [
     path('firewall/<server>/',views.firewall),
     path('show-detailed/<server>/',views.show_detailed_codewise),
     path('unblockipfw/<server>/',views.unblock_ips_fw),
+    # path('favicon.ico',favicon_view)
 
     # path('api/token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

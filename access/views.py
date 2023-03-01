@@ -183,6 +183,7 @@ def show_custom(request,server):
         # return JsonResponse(context)
     except:
         messages.info(request,'Unable to fetch logs')
+        context={'server':server}
     return render(request,'summary.html',context)
 
 @staff_member_required(login_url='/login/')
@@ -267,6 +268,7 @@ def show_detailed_codewise(request,server):
         # return JsonResponse(context)
     except:
         messages.info(request,'Unable to fetch logs')
+        context={'server':server}
     return render(request,'codewise.html',context)
 
 @staff_member_required(login_url='/login/')
@@ -294,6 +296,7 @@ def show_ipwise(request,server):
         # return JsonResponse(context)
     except:
         messages.info(request,'Unable to fetch logs')
+        context={'server':server}
     return render(request,'ipwise.html',context)
 
 @staff_member_required(login_url='/login/')
@@ -321,6 +324,7 @@ def block_ip(request,server):
 
     except:
         messages.info(request,'Unable to Block IP')
+
     return redirect(f'/show_ipwise/{server}/')
 
 # @csrf_exempt
@@ -358,6 +362,8 @@ def firewall(request,server):
     # return JsonResponse(context)
     except:
         messages.info(request,'Unable to fetch Blocked IPs')
+        context={'server':server}
+
     return render(request,'firewall.html',context)
 
 @staff_member_required(login_url='/login/')
