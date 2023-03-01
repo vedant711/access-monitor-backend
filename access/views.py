@@ -44,6 +44,10 @@ from django.contrib.auth import authenticate,login,logout
 #         '/token/refresh/'
 #     ]
 #     return Response(routes)
+
+def error404(request):
+    return render(request,'404.html')
+
 @csrf_exempt
 def login_view(request):
     if request.user.is_authenticated:
