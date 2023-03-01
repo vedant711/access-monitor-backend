@@ -50,15 +50,20 @@ def error404(request):
 
 @csrf_exempt
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('/')
-    if request.method == "POST":
-        username, password = request.POST['username'],request.POST['password']
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            login(request,user)
-            return redirect('/')
-    return render(request,'login.html')
+    if request.user.is_authenticated: return redirect('/')
+    else:
+        nxt = request.GET.get('next','/')
+        if '/show_custom/' in nxt:
+            nxt = nxt.replace('/show_custom/','/access/')
+        context = {'next':nxt}
+        if request.method == "POST":
+            username, password = request.POST['username'],request.POST['password']
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request,user)
+                return redirect(nxt)
+            else:messages.info(request,'Incorrect Username or Password')
+        return render(request,'login.html',context)
 
 @csrf_exempt
 def logout_view(request):

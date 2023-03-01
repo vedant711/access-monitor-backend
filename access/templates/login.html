@@ -22,7 +22,7 @@
             <h4{% if message.tags %} class="{{ message.tags }}" id="msg" {% endif %}>{{ message }}</h4>
         {% endfor %}
     {% endif %}
-    <form class="container" method="post" action="/login/">
+    <form class="container" method="post" action="/login/?next={{next}}">
         <h1>Login </h1>
         {% csrf_token %}
         <hr />
