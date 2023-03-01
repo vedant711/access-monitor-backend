@@ -12,6 +12,11 @@
 
 </head>
 <body>
+    <script>
+        setTimeout(()=>{
+            document.getElementById('msg').style.display='none'
+        },5000)
+    </script>
     <div class="heading">
         <a href="/access/{{server}}/"><h1><i class="fa fa-arrow-left" aria-hidden="true"></i></h1></a>
         <h1>Complete Logs</h1>
@@ -20,7 +25,7 @@
     <div id='all_logs_for_today' style=white-space:pre-wrap>
         {% if messages %}
         {% for message in messages %}
-            <h4{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</h4>
+            <h4{% if message.tags %} class="{{ message.tags }}" id="msg" {% endif %}>{{ message }}</h4>
         {% endfor %}
     {% endif %}
         {{data}}

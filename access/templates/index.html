@@ -12,6 +12,11 @@
 
 </head>
 <body>
+    <script>
+        setTimeout(()=>{
+            document.getElementById('msg').style.display='none'
+        },5000)
+    </script>
     <div style='width:"100%"' id="root">
         <div class="header">
         <a href="/show_ipwise/{{server}}/"><p>View IP wise hits</p></a>
@@ -24,7 +29,7 @@
         <h2>Have a look at today's log</h2>
         {% if messages %}
         {% for message in messages %}
-            <h4{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</h4>
+            <h4{% if message.tags %} class="{{ message.tags }}" id="msg" {% endif %}>{{ message }}</h4>
         {% endfor %}
     {% endif %}
 

@@ -95,6 +95,9 @@
     // }
 
 // }
+    setTimeout(()=>{
+            document.getElementById('msg').style.display='none'
+        },5000)
 
     </script>
     <div class="heading-main">
@@ -108,7 +111,7 @@
              <h1>Have a look at IP wise hits today</h1>
              {% if messages %}
         {% for message in messages %}
-            <h4{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</h4>
+            <h4{% if message.tags %} class="{{ message.tags }}" id="msg" {% endif %}>{{ message }}</h4>
         {% endfor %}
     {% endif %}
                 <table id='all_log'>

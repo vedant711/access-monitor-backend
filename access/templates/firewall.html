@@ -18,6 +18,10 @@
             document.getElementById('unblock').submit();
             // location.reload();
         }
+
+        setTimeout(()=>{
+            document.getElementById('msg').style.display='none'
+        },5000)
     </script>
     <div class="heading-main">
         <a href="/access/{{server}}/"><p><i class="fa fa-arrow-left" aria-hidden="true"></i></p></a>
@@ -27,7 +31,7 @@
     <div class='container'>
         {% if messages %}
         {% for message in messages %}
-            <h4{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</h4>
+            <h4{% if message.tags %} class="{{ message.tags }}" id="msg" {% endif %}>{{ message }}</h4>
         {% endfor %}
     {% endif %}
         {% if data %}
