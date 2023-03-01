@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 | Internal Server Error</title>
+    <link rel="stylesheet" href="{% static 'error.css' %}" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="shortcut icon" href="{%  static 'favicon.ico' %}">
+
+
+</head>
+<body>
+    <!-- <h1>404</h1> -->
+    <div class="wrapper">
+        <div class="container">
+          <div class="grid-row">
+            <div class="colmun colmun-left">
+              <img src="{% static 'image-left-500.png' %}" alt="image-left">
+              <h1 class="px-spc-b-20">Internal Server Error</h1>
+              <span class="px-spc-b-20">There was some error while processing your request.</span>
+              <a href="/"><button class="go-home"><i class="fa fa-home"></i> Go Home</button></a>
+            </div>
+            <div class="colmun colmun-right">
+              <img src="{% static 'right-shape.png' %}" alt="right-shape">
+            </div>
+          </div>
+        </div>
+      </div>
+</body>
+</html>

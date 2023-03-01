@@ -48,6 +48,9 @@ from django.contrib.auth import authenticate,login,logout
 def error404(request):
     return render(request,'404.html')
 
+def error500(request):
+    return render(request,'500.html')
+
 @csrf_exempt
 def login_view(request):
     if request.user.is_authenticated: return redirect('/')
