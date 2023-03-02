@@ -19,6 +19,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate,login,logout
+from dateutil.tz import gettz
 
 # @api_view(['GET', 'POST'])
 # @permission_classes([IsAuthenticated])
@@ -124,7 +125,7 @@ def show_custom(request,server):
             fil = request.POST['filter']
             if fil!='':
                 fil=int(fil)
-                dt = datetime.now()
+                dt = datetime.now(tz=gettz('Asia/Kolkata'))
                 hr = dt.hour
                 # print(dt)
                 final_arr ={200:'0',404:'0',301:'0',302:'0',500:'0'}
@@ -234,12 +235,12 @@ def show_detailed_codewise(request,server):
                 #                 try:final_arr[code] += subprocess.check_output(cmd, shell=True, universal_newlines=True)
                 #                 except: final_arr[code] += ''
                 # #print(final_arr)
-                dt = datetime.now()
+                dt = datetime.now(tz=gettz('Asia/Kolkata'))
                 hr = dt.hour
                 # print(dt)
                 # print(hr)
                 past=hr - fil
-                dt1 = dt.strftime('%d/%b/%Y')
+                # dt1 = dt.strftime('%d/%b/%Y')
                 # print(dt1)
                 # past = str(past)
                 # if len(past) !=2:past1 = '0'+past
